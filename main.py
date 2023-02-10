@@ -1,10 +1,9 @@
 import sys
-
 import requests
+from PyQt5 import QtGui
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import QApplication, QWidget, QLabel
-from PyQt5 import QtGui
 
 SCREEN_SIZE = [600, 450]
 
@@ -21,18 +20,25 @@ class Example(QWidget):
     SCALE_MIN = 0.000125
     SCALE_MAX = 65.536
 
+    LONGITUDE_INITIAL = 37.530887
+    LATITUDE_INITIAL = 55.703118
+
     def __init__(self):
         super().__init__()
+
         self.scale = self.SCALE_INITIAL
+        self.longitude = self.LONGITUDE_INITIAL
+        self.latitude = self.LATITUDE_INITIAL
+
         self.initUI()
         self.getImage()
 
     def getImage(self):
-        url = "http://static-maps.yandex.ru/1.x"
+        url = "http://static-maps.yandex.ru/1.x/"
         params = {
-            "ll": "37.530887,55.703118",
-            "spn": f"{self.scale},{self.scale}",
-            "l": "map"
+            'll': f"{self.longitude},{self.latitude}",
+            'spn': f'{self.scale},{self.scale}',
+            'l': 'map'
         }
         response = requests.get(url, params=params)
 
@@ -55,29 +61,42 @@ class Example(QWidget):
         self.image.resize(*SCREEN_SIZE)
         self.image.setPixmap(self.pixmap)
 
-    def keyPressEvent(self, event: QtGui.QKeyEvent):
-        is_update = False
-        if event.key() == Qt.Key_PageUp:
-            self.scale /= self.SCALE_COEFF
-            is_update = True
-        elif event.key() == Qt.Key_PageDown:
-            self.scale *= self.SCALE_COEFF
-            is_update = True
+    def keyPressEvent(self, event: QtGui.QKeyEvent) -> None:
+        binded_keys = {
+            Qt.Key_PageUp, Qt.Key_PageDown,
+            Qt.Key_Up, Qt.Key_Down, Qt.Key_Left, Qt.Key_Right
+        }
 
+        is_update = event.key() in binded_keys
+        match event.key():
+            case  Qt.Key_PageUp:
+                self.scale /= self.SCALE_COEFF
+            case  Qt.Key_PageDown:
+                self.scale *= self.SCALE_COEFF
+            case  Qt.Key_Up:
+                self.latitude += self.scale
+            case  Qt.Key_Down:
+                self.latitude -= self.scale
+            case  Qt.Key_Left:
+                self.longitude -= self.scale
+            case  Qt.Key_Right:
+                self.longitude += self.scale
         if self.scale > self.SCALE_MAX:
             self.scale = self.SCALE_MAX
         elif self.scale < self.SCALE_MIN:
             self.scale = self.SCALE_MIN
-
         if is_update:
             self.getImage()
 
+
 sys._excepthook = sys.excepthook
+
 
 def exception_hook(exctype, value, traceback):
     print(exctype, value, traceback)
     sys._excepthook(exctype, value, traceback)
     sys.exit(1)
+
 
 sys.excepthook = exception_hook
 
