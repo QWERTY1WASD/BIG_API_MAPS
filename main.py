@@ -19,13 +19,13 @@ class Example(QWidget):
     SCALE_INITIAL = 0.002
     SCALE_COEFF = 2
     SCALE_MIN = 0.000125
-    SCALE_MAX = 1000
+    SCALE_MAX = 65.536
 
     def __init__(self):
         super().__init__()
         self.scale = self.SCALE_INITIAL
-        self.getImage()
         self.initUI()
+        self.getImage()
 
     def getImage(self):
         url = "http://static-maps.yandex.ru/1.x"
